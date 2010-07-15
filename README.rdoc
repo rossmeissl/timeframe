@@ -4,7 +4,9 @@ A Ruby class for describing and interacting with timeframes.
 
 == Documentation
 
-== Acknoweldgements
+http://rdoc.info/projects/rossmeissl/timeframe
+
+== Acknowledgements
 
 The good parts of Timeframe all came from the gentlemen at Fingertips[http://fngtps.com].
 
