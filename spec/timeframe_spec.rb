@@ -250,9 +250,16 @@ describe Timeframe do
     end
   end
   
+  describe 'Timeframe:class#from_json' do
+    it 'should understand its own #to_json' do
+      t = Timeframe.new(:year => 2009)
+      Timeframe.from_json(t.to_json).should == t
+    end
+  end
+  
   describe '#to_json' do
     it 'should generate JSON' do
-      Timeframe.new(:year => 2009).to_json.should == "{\"from\":\"2009-01-01\",\"to\":\"2010-01-01\"}"
+      Timeframe.new(:year => 2009).to_json.should == "2009-01-01/2010-01-01"
     end
     it 'should ignore any arguments you give it' do
       example = Timeframe.new(:year => 2009).to_json

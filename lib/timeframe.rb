@@ -247,8 +247,10 @@ class Timeframe
     self.class.new((from - 1.year), (to - 1.year))
   end
   
-  def to_json(*) # :nodoc:
-    { :from => from, :to => to }.to_json
+  # Just a string that can be processed by Timeframe.interval... identical to #to_param
+  # accepts multiple arguments because of disagreements between active_support/json and json gem
+  def to_json(*)
+    to_param
   end
   
   # URL-friendly like "2008-10-25/2009-11-12"
@@ -293,11 +295,12 @@ class Timeframe
     
     # Construct a new Timeframe by parsing an ISO 8601 time interval string
     # http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
-    def interval(interval)
-      raise ArgumentError, 'Intervals should be specified as a string' unless interval.is_a? String
-      raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless interval =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
+    def interval(str)
+      raise ArgumentError, 'Intervals should be specified as a string' unless str.is_a? String
+      raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless str =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
 
-      new(*interval.split('/').map { |date| Date.parse date })
+      new(*str.split('/').map { |date| Date.parse date })
     end
+    alias :from_json :interval
   end
 end
