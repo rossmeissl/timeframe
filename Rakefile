@@ -12,6 +12,7 @@ begin
     gem.authors = ["Andy Rossmeissl", "Seamus Abshere", "Derek Kastner"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_dependency 'activesupport', '>2.3.8'
+    gem.add_dependency 'to_json_fix', '>0.0.1'
     gem.add_dependency 'andand'
   end
   Jeweler::GemcutterTasks.new
