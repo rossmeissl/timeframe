@@ -244,11 +244,21 @@ describe Timeframe do
     it 'should parse ISO 8601 interval format' do
       Timeframe.interval('2009-01-01/2010-01-01').should == Timeframe.new(:year => 2009)
     end
+    it 'should understand its own #to_param' do
+      t = Timeframe.new(:year => 2009)
+      Timeframe.interval(t.to_param).should == t
+    end
   end
   
   describe '#to_json' do
     it 'should generate JSON' do
       Timeframe.new(:year => 2009).to_json.should == "{\"from\":\"2009-01-01\",\"to\":\"2010-01-01\"}"
+    end
+  end
+  
+  describe '#to_param' do
+    it 'should generate a URL-friendly parameter' do
+      Timeframe.new(:year => 2009).to_param.should == "2009-01-01/2010-01-01"
     end
   end
   

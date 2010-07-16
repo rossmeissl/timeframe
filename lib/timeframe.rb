@@ -122,7 +122,6 @@ class Timeframe
   def hash
     from.hash + to.hash
   end
-  alias :to_param :hash
   
   # Returns an array of month-long subtimeframes
   #--
@@ -250,6 +249,11 @@ class Timeframe
   
   def to_json # :nodoc:
     { :from => from, :to => to }.to_json
+  end
+  
+  # URL-friendly like "2008-10-25/2009-11-12"
+  def to_param
+    "#{from}/#{to}"
   end
   
   class << self
