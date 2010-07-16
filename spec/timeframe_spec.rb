@@ -254,6 +254,11 @@ describe Timeframe do
     it 'should generate JSON' do
       Timeframe.new(:year => 2009).to_json.should == "{\"from\":\"2009-01-01\",\"to\":\"2010-01-01\"}"
     end
+    it 'should ignore any arguments you give it' do
+      example = Timeframe.new(:year => 2009).to_json
+      Timeframe.new(:year => 2009).to_json('hi').should == example
+      Timeframe.new(:year => 2009).to_json('hi', 'there').should == example
+    end
   end
   
   describe '#to_param' do

@@ -247,7 +247,7 @@ class Timeframe
     self.class.new((from - 1.year), (to - 1.year))
   end
   
-  def to_json # :nodoc:
+  def to_json(*) # :nodoc:
     { :from => from, :to => to }.to_json
   end
   
