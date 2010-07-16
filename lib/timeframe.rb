@@ -12,6 +12,7 @@ require 'active_support/version'
 end if ActiveSupport::VERSION::MAJOR == 3
 require 'andand'
 require 'timeframe/ykk'
+require 'timeframe/date_to_json'
 
 # Encapsulates a timeframe between two dates. The dates provided to the class are always until the last date. That means
 # that the last date is excluded.

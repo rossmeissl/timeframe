@@ -248,6 +248,7 @@ describe Timeframe do
   
   describe '#to_json' do
     it 'should generate JSON' do
-      Timeframe.new(:year => 2009).to_json.should == {}
+      Timeframe.new(:year => 2009).to_json.should == "{\"from\":\"2009-01-01\",\"to\":\"2010-01-01\"}"
+    end
   end
 end
