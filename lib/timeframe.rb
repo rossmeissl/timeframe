@@ -6,6 +6,7 @@ require 'active_support/version'
   active_support/core_ext/date/conversions
   active_support/core_ext/integer/time
   active_support/core_ext/numeric/time
+  active_support/json/encoding
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ActiveSupport::VERSION::MAJOR == 3

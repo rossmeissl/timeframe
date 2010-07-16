@@ -9,7 +9,7 @@ begin
     gem.description = %Q{A Ruby class for describing and interacting with timeframes.}
     gem.email = "andy@rossmeissl.net"
     gem.homepage = "http://github.com/rossmeissl/timeframe"
-    gem.authors = ["Andy Rossmeissl"]
+    gem.authors = ["Andy Rossmeissl", "Seamus Abshere", "Derek Kastner"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_dependency 'activesupport', '= 3.0.0.beta4'
     gem.add_dependency 'andand'

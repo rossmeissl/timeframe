@@ -245,4 +245,9 @@ describe Timeframe do
       Timeframe.interval('2009-01-01/2010-01-01').should == Timeframe.new(:year => 2009)
     end
   end
+  
+  describe '#to_json' do
+    it 'should generate JSON' do
+      Timeframe.new(:year => 2009).to_json.should == {}
+  end
 end
