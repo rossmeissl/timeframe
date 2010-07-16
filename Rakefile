@@ -11,7 +11,7 @@ begin
     gem.homepage = "http://github.com/rossmeissl/timeframe"
     gem.authors = ["Andy Rossmeissl", "Seamus Abshere", "Derek Kastner"]
     gem.add_development_dependency "rspec", ">= 1.2.9"
-    gem.add_dependency 'activesupport', '= 3.0.0.beta4'
+    gem.add_dependency 'activesupport', '>2.3.8'
     gem.add_dependency 'andand'
   end
   Jeweler::GemcutterTasks.new
