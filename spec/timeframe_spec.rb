@@ -251,4 +251,10 @@ describe Timeframe do
       Timeframe.new(:year => 2009).to_json.should == "{\"from\":\"2009-01-01\",\"to\":\"2010-01-01\"}"
     end
   end
+  
+  describe '#to_s' do
+    it 'should not only look at month numbers when describing multi-year timeframes' do
+      Timeframe.multiyear(Date.parse('2008-01-01'), Date.parse('2010-01-01')).to_s.should == "the period from 01 January to 31 December 2009"
+    end
+  end
 end

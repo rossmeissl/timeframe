@@ -79,9 +79,9 @@ class Timeframe
   
   # Returns a string representation of the timeframe
   def to_s
-    if [from.day, from.month, to.day, to.month].uniq == [1]
+    if (from.year == to.year - 1) and [from.day, from.month, to.day, to.month].uniq == [1]
       from.year.to_s
-    elsif from.day == 1 and to.day == 1 and to.month - from.month == 1
+    elsif from.year == to.year and from.day == 1 and to.day == 1 and to.month - from.month == 1
       "#{Date::MONTHNAMES[from.month]} #{from.year}"
     else
       "the period from #{from.strftime('%d %B')} to #{to.yesterday.strftime('%d %B %Y')}"
