@@ -6,12 +6,10 @@ require 'active_support/version'
   active_support/core_ext/date/conversions
   active_support/core_ext/integer/time
   active_support/core_ext/numeric/time
-  active_support/json/encoding
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ActiveSupport::VERSION::MAJOR == 3
 require 'andand'
-require 'to_json_fix'
 require 'timeframe/ykk'
 
 # Encapsulates a timeframe between two dates. The dates provided to the class are always until the last date. That means
@@ -248,7 +246,6 @@ class Timeframe
   end
   
   # Just a string that can be processed by Timeframe.interval... identical to #to_param
-  # accepts multiple arguments because of disagreements between active_support/json and json gem
   def to_json(*)
     to_param
   end
