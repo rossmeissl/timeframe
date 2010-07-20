@@ -244,6 +244,11 @@ describe Timeframe do
     it 'should parse ISO 8601 interval format' do
       Timeframe.interval('2009-01-01/2010-01-01').should == Timeframe.new(:year => 2009)
     end
+    it 'should skip year boundary checking' do
+      lambda {
+        Timeframe.interval '2009-01-01/2011-01-01'
+      }.should_not raise_error
+    end
     it 'should understand its own #to_param' do
       t = Timeframe.new(:year => 2009)
       Timeframe.interval(t.to_param).should == t

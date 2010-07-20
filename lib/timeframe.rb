@@ -256,6 +256,12 @@ class Timeframe
   end
   
   class << self
+    def make_dates(from, to) # :nodoc:
+      from = Date.parse from if from.is_a? String
+      to = Date.parse to if to.is_a? String
+      [from, to]
+    end
+    
     # Shortcut method to return the Timeframe representing the current year (as defined by Time.now)
     def this_year
       new :year => Time.now.year
@@ -263,7 +269,8 @@ class Timeframe
     
     # Construct a new Timeframe, but constrain it by another
     def constrained_new(from, to, constraint)
-      raise ArgumentError, 'Need Date, Date, Timeframe as args' unless from.is_a? Date and to.is_a? Date and constraint.is_a? Timeframe
+      from, to = make_dates from, to
+      raise ArgumentError, 'Constraint must be a Timeframe' unless constraint.is_a? Timeframe
       raise ArgumentError, "Start date #{from} should be earlier than end date #{to}" if from > to
       if to <= constraint.from or from >= constraint.to
         new constraint.from, constraint.from
@@ -278,8 +285,7 @@ class Timeframe
     
     # Shortcut for #new that automatically skips year boundary crossing checks
     def multiyear(from, to)
-      from = Date.parse(from) if from.is_a?(String)
-      to = Date.parse(to) if to.is_a?(String)
+      from, to = make_dates from, to
       new from, to, :skip_year_boundary_crossing_check => true
     end
     
@@ -295,8 +301,7 @@ class Timeframe
     def interval(str)
       raise ArgumentError, 'Intervals should be specified as a string' unless str.is_a? String
       raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless str =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
-
-      new(*str.split('/').map { |date| Date.parse date })
+      multiyear *str.split('/')
     end
     alias :from_json :interval
   end
