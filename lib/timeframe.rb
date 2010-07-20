@@ -9,7 +9,6 @@ require 'active_support/version'
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ActiveSupport::VERSION::MAJOR == 3
-require 'andand'
 require 'timeframe/ykk'
 
 # Encapsulates a timeframe between two dates. The dates provided to the class are always until the last date. That means
