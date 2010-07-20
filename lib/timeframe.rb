@@ -257,9 +257,7 @@ class Timeframe
   
   class << self
     def make_dates(from, to) # :nodoc:
-      from = Date.parse from if from.is_a? String
-      to = Date.parse to if to.is_a? String
-      [from, to]
+      return from.to_date, to.to_date
     end
     
     # Shortcut method to return the Timeframe representing the current year (as defined by Time.now)
