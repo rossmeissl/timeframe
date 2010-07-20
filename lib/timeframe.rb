@@ -52,8 +52,8 @@ class Timeframe
       to   = Date.new(year+1, 1, 1)
     end
 
-    from ||= args.shift.andand.to_date
-    to ||= args.shift.andand.to_date
+    from = args.shift.to_date if from.nil? and args.any?
+    to = args.shift.to_date if to.nil? and args.any?
 
     raise ArgumentError, "Please supply a start and end date, `#{args.map(&:inspect).to_sentence}' is not enough" if from.nil? or to.nil?
     raise ArgumentError, "Start date #{from} should be earlier than end date #{to}" if from > to
