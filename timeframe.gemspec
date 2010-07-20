@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{timeframe}
-  s.version = "0.0.6"
+  s.version = "0.0.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Andy Rossmeissl", "Seamus Abshere", "Derek Kastner"]
-  s.date = %q{2010-07-16}
+  s.date = %q{2010-07-20}
   s.description = %q{A Ruby class for describing and interacting with timeframes.}
   s.email = %q{andy@rossmeissl.net}
   s.extra_rdoc_files = [
@@ -46,20 +46,14 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<rspec>, [">= 1.2.9"])
-      s.add_runtime_dependency(%q<activesupport>, [">= 2.3.8"])
-      s.add_runtime_dependency(%q<to_json_fix>, [">= 0.0.1"])
-      s.add_runtime_dependency(%q<andand>, [">= 0"])
+      s.add_runtime_dependency(%q<activesupport>, [">= 2.3.5"])
     else
       s.add_dependency(%q<rspec>, [">= 1.2.9"])
-      s.add_dependency(%q<activesupport>, [">= 2.3.8"])
-      s.add_dependency(%q<to_json_fix>, [">= 0.0.1"])
-      s.add_dependency(%q<andand>, [">= 0"])
+      s.add_dependency(%q<activesupport>, [">= 2.3.5"])
     end
   else
     s.add_dependency(%q<rspec>, [">= 1.2.9"])
-    s.add_dependency(%q<activesupport>, [">= 2.3.8"])
-    s.add_dependency(%q<to_json_fix>, [">= 0.0.1"])
-    s.add_dependency(%q<andand>, [">= 0"])
+    s.add_dependency(%q<activesupport>, [">= 2.3.5"])
   end
 end
 
