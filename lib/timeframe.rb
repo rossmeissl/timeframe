@@ -249,6 +249,12 @@ class Timeframe
     to_param
   end
   
+  # http://jonathanjulian.com/2010/04/rails-to_json-or-as_json/
+  # Not really interested in making a Hash representation.
+  def as_json(*)
+    to_param
+  end
+  
   # URL-friendly like "2008-10-25/2009-11-12"
   def to_param
     "#{from}/#{to}"
