@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{timeframe}
-  s.version = "0.0.7"
+  s.version = "0.0.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Andy Rossmeissl", "Seamus Abshere", "Derek Kastner"]
-  s.date = %q{2010-07-20}
+  s.date = %q{2010-07-21}
   s.description = %q{A Ruby class for describing and interacting with timeframes.}
   s.email = %q{andy@rossmeissl.net}
   s.extra_rdoc_files = [
