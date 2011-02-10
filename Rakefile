@@ -1,22 +1,5 @@
-require 'rubygems'
-require 'rake'
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = "timeframe"
-    gem.summary = %Q{Date intervals}
-    gem.description = %Q{A Ruby class for describing and interacting with timeframes.}
-    gem.email = "andy@rossmeissl.net"
-    gem.homepage = "http://github.com/rossmeissl/timeframe"
-    gem.authors = ["Andy Rossmeissl", "Seamus Abshere", "Derek Kastner"]
-    gem.add_development_dependency "rspec", ">= 1.2.9"
-    gem.add_dependency 'activesupport', '>=2.3.5'
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
-end
+require 'bundler'
+Bundler::GemHelper.install_tasks
 
 require 'spec/rake/spectask'
 Spec::Rake::SpecTask.new(:spec) do |spec|
@@ -29,8 +12,6 @@ Spec::Rake::SpecTask.new(:rcov) do |spec|
   spec.pattern = 'spec/**/*_spec.rb'
   spec.rcov = true
 end
-
-task :spec => :check_dependencies
 
 task :default => :spec
 
