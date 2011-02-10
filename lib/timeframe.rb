@@ -1,4 +1,4 @@
-require 'rubygems'
+require 'date'
 require 'active_support/version'
 %w{
   active_support/core_ext/array/extract_options

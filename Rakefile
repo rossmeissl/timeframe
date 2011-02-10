@@ -1,3 +1,8 @@
+# must be included before rubygems or bundler
+if ENV['TIMEFRAME_HOME_RUN'] == 'true'
+  require 'home_run'
+end
+
 require 'bundler'
 Bundler::GemHelper.install_tasks
 
