@@ -9,7 +9,6 @@ require 'active_support/version'
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ActiveSupport::VERSION::MAJOR == 3
-require 'timeframe/ykk'
 
 # Encapsulates a timeframe between two dates. The dates provided to the class are always until the last date. That means
 # that the last date is excluded.
@@ -229,7 +228,10 @@ class Timeframe
 
     timeframes.sort! { |x, y| x.from <=> y.from }
     
-    timeframes.collect(&:to).unshift(from).extend(Ykk).ykk(timeframes.collect(&:from).push(to)) do |gap|
+    a = [ from ] + timeframes.collect(&:to)
+    b = timeframes.collect(&:from) + [ to ]
+
+    a.zip(b).map do |gap|
       Timeframe.new(*gap) if gap[1] > gap[0]
     end.compact
   end
