@@ -1,11 +1,13 @@
 require 'date'
 require 'active_support/version'
 %w{
+  active_support/core_ext/hash
   active_support/core_ext/array/extract_options
   active_support/core_ext/string/conversions
   active_support/core_ext/date/conversions
   active_support/core_ext/integer/time
   active_support/core_ext/numeric/time
+  active_support/json
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ActiveSupport::VERSION::MAJOR == 3
@@ -245,16 +247,9 @@ class Timeframe
   def last_year
     self.class.new((from - 1.year), (to - 1.year))
   end
-  
-  # Just a string that can be processed by Timeframe.interval... identical to #to_param
-  def to_json(*)
-    to_param
-  end
-  
-  # http://jonathanjulian.com/2010/04/rails-to_json-or-as_json/
-  # Not really interested in making a Hash representation.
+    
   def as_json(*)
-    to_param
+    { :from => from, :to => to }
   end
   
   # URL-friendly like "2008-10-25/2009-11-12"
@@ -308,6 +303,10 @@ class Timeframe
       raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless str =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
       multiyear *str.split('/')
     end
-    alias :from_json :interval
+    
+    def from_json(str)
+      hsh = ::ActiveSupport::JSON.decode str
+      new hsh['from'], hsh['to'], :skip_year_boundary_crossing_check => true
+    end
   end
 end
