@@ -263,7 +263,7 @@ describe Timeframe do
   
   describe '#to_json' do
     it 'should generate JSON (test fails on ruby 1.8)' do
-      Timeframe.new(:year => 2009).to_json.should == { 'from' => '2009-01-01', 'to' => '2010-01-01' }.to_json
+      Timeframe.new(:year => 2009).to_json.should == "2009-01-01/2010-01-01"
     end
   end
   

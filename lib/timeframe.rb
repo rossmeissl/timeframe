@@ -249,7 +249,12 @@ class Timeframe
   end
     
   def as_json(*)
-    { :from => from, :to => to }
+    to_param
+  end
+  
+  # overriding this so that as_json is not used
+  def to_json(*)
+    to_param
   end
   
   # URL-friendly like "2008-10-25/2009-11-12"
@@ -303,10 +308,6 @@ class Timeframe
       raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless str =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
       multiyear *str.split('/')
     end
-    
-    def from_json(str)
-      hsh = ::ActiveSupport::JSON.decode str
-      new hsh['from'], hsh['to'], :skip_year_boundary_crossing_check => true
-    end
+    alias :from_json :interval
   end
 end
