@@ -75,17 +75,6 @@ class Timeframe
     (to - from).to_i
   end
   
-  # Returns a string representation of the timeframe
-  def to_s
-    if (from.year == to.year - 1) and [from.day, from.month, to.day, to.month].uniq == [1]
-      from.year.to_s
-    elsif from.year == to.year and from.day == 1 and to.day == 1 and to.month - from.month == 1
-      "#{Date::MONTHNAMES[from.month]} #{from.year}"
-    else
-      "the period from #{from.strftime('%d %B')} to #{to.yesterday.strftime('%d %B %Y')}"
-    end
-  end
-
   # Returns true when a Date or other Timeframe is included in this Timeframe
   def include?(obj)
     # puts "checking to see if #{date} is between #{from} and #{to}" if Emitter::DEBUG
@@ -257,9 +246,14 @@ class Timeframe
     to_param
   end
   
-  # URL-friendly like "2008-10-25/2009-11-12"
+  # An ISO 8601 "time interval" like YYYY-MM-DD/YYYY-MM-DD
   def to_param
     "#{from}/#{to}"
+  end
+  
+  # The String representation is equivalent to its ISO 8601 form
+  def to_s
+    to_param
   end
   
   class << self
