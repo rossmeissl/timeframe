@@ -263,6 +263,10 @@ class Timeframe
   def to_json(*)
     %({"startDate":"#{start_date.iso8601}","endDate":"#{end_date.iso8601}"})
   end
+  
+  def as_json(*)
+    { :startDate => start_date.iso8601, :endDate => end_date.iso8601 }
+  end
     
   # An ISO 8601 "time interval" like YYYY-MM-DD/YYYY-MM-DD
   def iso8601
