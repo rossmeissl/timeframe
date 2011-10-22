@@ -1,18 +1,9 @@
 require 'date'
+require 'multi_json'
 require 'active_support/version'
-%w{
-  active_support/core_ext/hash
-  active_support/core_ext/array/extract_options
-  active_support/core_ext/string/conversions
-  active_support/core_ext/date/conversions
-  active_support/core_ext/integer/time
-  active_support/core_ext/numeric/time
-  active_support/json
-}.each do |active_support_3_requirement|
-  require active_support_3_requirement
-end if ActiveSupport::VERSION::MAJOR == 3
+require 'active_support/core_ext' if ActiveSupport::VERSION::MAJOR >= 3
 
-# Encapsulates a timeframe between two dates. The dates provided to the class are always until the last date. That means
+# Encapsulates a timeframe between two dates. The dates provided to the class are always **until** the last date. That means
 # that the last date is excluded.
 #
 #   # from 2007-10-01 00:00:00.000 to 2007-10-31 23:59:59.999
@@ -20,7 +11,68 @@ end if ActiveSupport::VERSION::MAJOR == 3
 #   # and holds 31 days
 #   Timeframe.new(Date(2007,10,1), Date(2007,11,1)).days #=> 31
 class Timeframe
-  attr_accessor :from, :to
+  class << self    
+    # Shortcut method to return the Timeframe representing the current year (as defined by Time.now)
+    def this_year
+      new :year => Time.now.year
+    end
+    
+    # Construct a new Timeframe, but constrain it by another
+    def constrained_new(start_date, end_date, constraint)
+      start_date, end_date = make_dates start_date, end_date
+      raise ArgumentError, 'Constraint must be a Timeframe' unless constraint.is_a? Timeframe
+      raise ArgumentError, "Start date #{start_date} should be earlier than end date #{end_date}" if start_date > end_date
+      if end_date <= constraint.start_date or start_date >= constraint.end_date
+        new constraint.start_date, constraint.start_date
+      elsif start_date.year == end_date.yesterday.year
+        new(start_date, end_date) & constraint
+      elsif start_date.year < constraint.start_date.year and constraint.start_date.year < end_date.yesterday.year
+        constraint
+      else
+        new [constraint.start_date, start_date].max, [constraint.end_date, end_date].min
+      end
+    end
+    
+    # Create a timeframe +/- number of years around today
+    def mid(number)
+      start_date = Time.now.today - number.years
+      end_date = Time.now.today + number.years
+      new start_date, end_date
+    end
+    
+    # Construct a new Timeframe by parsing an ISO 8601 time interval string
+    # http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
+    def interval(str)
+      raise ArgumentError, 'Intervals should be specified as a string' unless str.is_a? String
+      raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless str =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
+      new *str.split('/')
+    end
+    
+    def from_json(str)
+      str = str.strip
+      if str.start_with?('{')
+        hsh = ::MultiJson.decode str
+        new hsh['startDate'], hsh['endDate']
+      else
+        # Assume it's like "YYYY-MM-DD/YYYY-MM-DD", which is bad JSON, but we understand
+        interval str
+      end
+    end
+    
+    private
+    
+    def make_dates(start_date, end_date)
+      [start_date.to_date, end_date.to_date]
+    end
+    
+    # Deprecated
+    def multiyear(*args) # :nodoc:
+      new *args
+    end
+  end
+
+  attr_reader :start_date
+  attr_reader :end_date
 
   # Creates a new instance of Timeframe. You can either pass a start and end Date or a Hash with named arguments,
   # with the following options:
@@ -29,9 +81,6 @@ class Timeframe
   #   the next month. If no <tt>:year</tt> is specified, the current year is used.
   #   <tt>:year</tt>: Start date becomes the first day of this year, and the end date becomes the first day of the
   #   next year.
-  #
-  # By default, Timeframe.new will die if the resulting Timeframe would cross year boundaries. This can be overridden
-  # by setting the <tt>:skip_year_boundary_crossing_check</tt> option.
   #
   # Examples:
   #
@@ -45,132 +94,106 @@ class Timeframe
     if month = options[:month]
       month = Date.parse(month).month if month.is_a? String
       year = options[:year] || Date.today.year
-      from = Date.new(year, month, 1)
-      to   = from.next_month
+      start_date = Date.new(year, month, 1)
+      end_date   = start_date.next_month
     elsif year = options[:year]
-      from = Date.new(year, 1, 1)
-      to   = Date.new(year+1, 1, 1)
+      start_date = Date.new(year, 1, 1)
+      end_date   = Date.new(year+1, 1, 1)
     end
 
-    from = args.shift.to_date if from.nil? and args.any?
-    to = args.shift.to_date if to.nil? and args.any?
+    start_date = args.shift.to_date if start_date.nil? and args.any?
+    end_date = args.shift.to_date if end_date.nil? and args.any?
 
-    raise ArgumentError, "Please supply a start and end date, `#{args.map(&:inspect).to_sentence}' is not enough" if from.nil? or to.nil?
-    raise ArgumentError, "Start date #{from} should be earlier than end date #{to}" if from > to
-    raise ArgumentError, 'Timeframes that cross year boundaries are dangerous' unless options[:skip_year_boundary_crossing_check] or from.year == to.yesterday.year or from == to
+    raise ArgumentError, "Please supply a start and end date, `#{args.map(&:inspect).to_sentence}' is not enough" if start_date.nil? or end_date.nil?
+    raise ArgumentError, "Start date #{start_date} should be earlier than end date #{end_date}" if start_date > end_date
 
-    @from, @to = from, to
+    @start_date, @end_date = start_date, end_date
   end
   
   def inspect # :nodoc:
-    "<Timeframe(#{object_id}) #{days} days starting #{from} ending #{to}>"
+    "<Timeframe(#{object_id}) #{days} days starting #{start_date} ending #{end_date}>"
   end
-
+    
   # The number of days in the timeframe
   #
   #   Timeframe.new(Date.new(2007, 11, 1), Date.new(2007, 12, 1)).days #=> 30
   #   Timeframe.new(:month => 1).days #=> 31
   #   Timeframe.new(:year => 2004).days #=> 366
   def days
-    (to - from).to_i
+    (end_date - start_date).to_i
   end
   
   # Returns true when a Date or other Timeframe is included in this Timeframe
   def include?(obj)
-    # puts "checking to see if #{date} is between #{from} and #{to}" if Emitter::DEBUG
+    # puts "checking to see if #{date} is between #{start_date} and #{end_date}" if Emitter::DEBUG
     case obj
     when Date
-      (from...to).include?(obj)
+      (start_date...end_date).include?(obj)
     when Time
-      # (from...to).include?(obj.to_date)
+      # (start_date...end_date).include?(obj.to_date)
       raise "this wasn't previously supported, but it could be"
     when Timeframe
-      from <= obj.from and to >= obj.to
+      start_date <= obj.start_date and end_date >= obj.end_date
     end
   end
   
   # Returns true when the parameter Timeframe is properly included in the Timeframe
   def proper_include?(other_timeframe)
     raise ArgumentError, 'Proper inclusion only makes sense when testing other Timeframes' unless other_timeframe.is_a? Timeframe
-    (from < other_timeframe.from) and (to > other_timeframe.to)
+    (start_date < other_timeframe.start_date) and (end_date > other_timeframe.end_date)
   end
   
   # Returns true when this timeframe is equal to the other timeframe
   def ==(other)
     # puts "checking to see if #{self} is equal to #{other}" if Emitter::DEBUG
     return false unless other.is_a?(Timeframe)
-    from == other.from and to == other.to
+    start_date == other.start_date and end_date == other.end_date
   end
   alias :eql? :==
     
   # Calculates a hash value for the Timeframe, used for equality checking and Hash lookups.
-  #--
-  # This needs to be an integer or else it won't use #eql?
   def hash
-    from.hash + to.hash
+    start_date.hash + end_date.hash
   end
-  
-  # Returns an array of month-long subtimeframes
-  #--
-  # TODO: rename to month_subtimeframes
-  def months
-    raise ArgumentError, "Please only provide whole-month timeframes to Timeframe#months" unless from.day == 1 and to.day == 1
-    raise ArgumentError, 'Timeframes that cross year boundaries are dangerous during Timeframe#months' unless from.year == to.yesterday.year
-    year = from.year # therefore this only works in the from year
-    (from.month..to.yesterday.month).map { |m| Timeframe.new :month => m, :year => year }
-  end
-  
+    
   # Returns the relevant year as a Timeframe
   def year
-    raise ArgumentError, 'Timeframes that cross year boundaries are dangerous during Timeframe#year' unless from.year == to.yesterday.year
-    Timeframe.new :year => from.year
+    raise ArgumentError, 'Timeframes that cross year boundaries are dangerous during Timeframe#year' unless start_date.year == end_date.yesterday.year
+    Timeframe.new :year => start_date.year
   end
-  
-  # Divides a Timeframe into component parts, each no more than a month long.
-  #--
-  # multiyear safe
-  def month_subtimeframes
-    (from.year..to.yesterday.year).map do |year|
+    
+  # Returns an Array of month-long Timeframes. Partial months are **not** included by default.
+  def months(include_partial_months=false)
+    partial_months = (start_date.year..end_date.yesterday.year).map do |year|
       (1..12).map do |month|
-        Timeframe.new(:year => year, :month => month) & self
+        if include_partial_months
+          Timeframe.new(:year => year, :month => month) & self
+        else
+          Timeframe.new(:year => year, :month => month)
+        end
       end
-    end.flatten.compact
+    end.flatten
   end
-  
-  # Like #month_subtimeframes, but will discard partial months
-  # multiyear safe
-  def full_month_subtimeframes
-    month_subtimeframes.map { |st| Timeframe.new(:year => st.from.year, :month => st.from.month) }
-  end
-  
-  # Divides a Timeframe into component parts, each no more than a year long.
-  #--
-  # multiyear safe
-  def year_subtimeframes
-    (from.year..to.yesterday.year).map do |year|
-      Timeframe.new(:year => year) & self
-    end
-  end
-  
-  # Like #year_subtimeframes, but will discard partial years
-  #--
-  # multiyear safe
-  def full_year_subtimeframes
-    (from.year..to.yesterday.year).map do |year|
-      Timeframe.new :year => year
+    
+  # Returns an Array of year-long Timeframes. Partial years are **not** included by default.
+  def years(include_partial_years=false)
+    (start_date.year..end_date.yesterday.year).map do |year|
+      if include_partial_years
+        Timeframe.new(:year => year) & self
+      else
+        Timeframe.new(:year => year)
+      end
     end
   end
   
   # Crop a Timeframe to end no later than the provided date.
-  #--
-  # multiyear safe  
   def ending_no_later_than(date)
-    if to < date
+    if end_date < date
       self
-    elsif from >= date
+    elsif start_date >= date
       nil
     else
-      Timeframe.multiyear from, date
+      Timeframe.new start_date, date
     end
   end
     
@@ -179,14 +202,14 @@ class Timeframe
     this_timeframe = self
     if other_timeframe == this_timeframe
       this_timeframe
-    elsif this_timeframe.from > other_timeframe.from and this_timeframe.to < other_timeframe.to
+    elsif this_timeframe.start_date > other_timeframe.start_date and this_timeframe.end_date < other_timeframe.end_date
       this_timeframe
-    elsif other_timeframe.from > this_timeframe.from and other_timeframe.to < this_timeframe.to
+    elsif other_timeframe.start_date > this_timeframe.start_date and other_timeframe.end_date < this_timeframe.end_date
       other_timeframe
-    elsif this_timeframe.from >= other_timeframe.to or this_timeframe.to <= other_timeframe.from
+    elsif this_timeframe.start_date >= other_timeframe.end_date or this_timeframe.end_date <= other_timeframe.start_date
       nil
     else
-      Timeframe.new [this_timeframe.from, other_timeframe.from].max, [this_timeframe.to, other_timeframe.to].min, :skip_year_boundary_crossing_check => true
+      Timeframe.new [this_timeframe.start_date, other_timeframe.start_date].max, [this_timeframe.end_date, other_timeframe.end_date].min
     end
   end
   
@@ -199,14 +222,14 @@ class Timeframe
   # Crop a Timeframe by another Timeframe
   def crop(container)
     raise ArgumentError, 'You can only crop a timeframe by another timeframe' unless container.is_a? Timeframe
-    self.class.new [from, container.from].max, [to, container.to].min
+    self.class.new [start_date, container.start_date].max, [end_date, container.end_date].min
   end
   
   # Returns an array of Timeframes representing the gaps left in the Timeframe after removing all given Timeframes
   def gaps_left_by(*timeframes)
     # remove extraneous timeframes
-    timeframes.reject! { |t| t.to <= from }
-    timeframes.reject! { |t| t.from >= to }
+    timeframes.reject! { |t| t.end_date <= start_date }
+    timeframes.reject! { |t| t.start_date >= end_date }
     
     # crop timeframes
     timeframes.map! { |t| t.crop self }
@@ -217,10 +240,10 @@ class Timeframe
     # escape
     return [self] if  timeframes.empty?
 
-    timeframes.sort! { |x, y| x.from <=> y.from }
+    timeframes.sort! { |x, y| x.start_date <=> y.start_date }
     
-    a = [ from ] + timeframes.collect(&:to)
-    b = timeframes.collect(&:from) + [ to ]
+    a = [ start_date ] + timeframes.collect(&:end_date)
+    b = timeframes.collect(&:start_date) + [ end_date ]
 
     a.zip(b).map do |gap|
       Timeframe.new(*gap) if gap[1] > gap[0]
@@ -234,74 +257,50 @@ class Timeframe
   
   # Returns the same Timeframe, only a year earlier
   def last_year
-    self.class.new((from - 1.year), (to - 1.year))
+    self.class.new((start_date - 1.year), (end_date - 1.year))
+  end
+  
+  def to_json(*)
+    %({"startDate":"#{start_date.iso8601}","endDate":"#{end_date.iso8601}"})
   end
     
-  def as_json(*)
-    to_param
-  end
-  
-  # overriding this so that as_json is not used
-  def to_json(*)
-    to_param
-  end
-  
   # An ISO 8601 "time interval" like YYYY-MM-DD/YYYY-MM-DD
   def to_param
-    "#{from}/#{to}"
+    "#{start_date.iso8601}/#{end_date.iso8601}"
   end
   
   # The String representation is equivalent to its ISO 8601 form
   def to_s
     to_param
   end
+
+  # Deprecated
+  def from # :nodoc:
+    @start_date
+  end
   
-  class << self
-    def make_dates(from, to) # :nodoc:
-      return from.to_date, to.to_date
-    end
-    
-    # Shortcut method to return the Timeframe representing the current year (as defined by Time.now)
-    def this_year
-      new :year => Time.now.year
-    end
-    
-    # Construct a new Timeframe, but constrain it by another
-    def constrained_new(from, to, constraint)
-      from, to = make_dates from, to
-      raise ArgumentError, 'Constraint must be a Timeframe' unless constraint.is_a? Timeframe
-      raise ArgumentError, "Start date #{from} should be earlier than end date #{to}" if from > to
-      if to <= constraint.from or from >= constraint.to
-        new constraint.from, constraint.from
-      elsif from.year == to.yesterday.year
-        new(from, to) & constraint
-      elsif from.year < constraint.from.year and constraint.from.year < to.yesterday.year
-        constraint
-      else
-        new [constraint.from, from].max, [constraint.to, to].min
-      end
-    end
-    
-    # Shortcut for #new that automatically skips year boundary crossing checks
-    def multiyear(from, to)
-      from, to = make_dates from, to
-      new from, to, :skip_year_boundary_crossing_check => true
-    end
-    
-    # Create a multiyear timeframe +/- number of years around today
-    def mid(number)
-      from = Time.zone.today - number.years
-      to = Time.zone.today + number.years
-      multiyear from, to
-    end
-    
-    # Construct a new Timeframe by parsing an ISO 8601 time interval string
-    # http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
-    def interval(str)
-      raise ArgumentError, 'Intervals should be specified as a string' unless str.is_a? String
-      raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless str =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
-      multiyear *str.split('/')
-    end
-    alias :from_json :interval
+  # Deprecated
+  def to # :nodoc:
+    @end_date
+  end
+
+  # Deprecated
+  def full_year_subtimeframes # :nodoc:
+    years
+  end
+  
+  # Deprecated
+  def year_subtimeframes # :nodoc:
+    years true
+  end
+  
+  # Deprecated
+  def full_month_subtimeframes # :nodoc:
+    months
+  end
+  
+  # Deprecated
+  def month_subtimeframes # :nodoc:
+    months true
   end
 end

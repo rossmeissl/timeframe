@@ -44,14 +44,9 @@ describe Timeframe do
         timeframe = Timeframe.new Date.new(2008, 1, 1), Date.new(2007, 1, 1)
       }.should raise_error(ArgumentError, /earlier/)
     end
-    it "should not accept timeframes that cross year boundaries" do
+    it "should always accept timeframes that cross year boundaries" do
       lambda {
         timeframe = Timeframe.new Date.new(2007, 1, 1), Date.new(2008, 1, 2)
-      }.should raise_error(ArgumentError, /cross/)
-    end
-    it "should optionally accept timeframes that cross year boundaries" do
-      lambda {
-        timeframe = Timeframe.new Date.new(2007, 1, 1), Date.new(2008, 1, 2), :skip_year_boundary_crossing_check => true
       }.should_not raise_error
     end
   end
@@ -170,14 +165,6 @@ describe Timeframe do
     it "should return an array of month-long subtimeframes" do
       Timeframe.new(:year => 2009).months.length.should == 12
     end
-    it "should not return an array of month-long subtimeframes if provided an inappropriate range" do
-      lambda { 
-        Timeframe.new(Date.new(2009, 3, 2), Date.new(2009, 3, 5)).months
-      }.should raise_error(ArgumentError, /whole/)
-      lambda {
-        Timeframe.new(Date.new(2009, 1, 1), Date.new(2012, 1, 1), :skip_year_boundary_crossing_check => true).months
-      }.should raise_error(ArgumentError, /dangerous during/)
-    end
   end
 
   describe '#year' do
@@ -186,7 +173,7 @@ describe Timeframe do
     end
     it "should not return the relevant year of a timeframe if provided an inappropriate range" do
       lambda {
-        Timeframe.new(Date.new(2009, 1, 1), Date.new(2012, 1, 1), :skip_year_boundary_crossing_check => true).year
+        Timeframe.new(Date.new(2009, 1, 1), Date.new(2012, 1, 1)).year
       }.should raise_error(ArgumentError, /dangerous during/)
     end
   end
@@ -263,7 +250,7 @@ describe Timeframe do
   
   describe '#to_json' do
     it 'should generate JSON (test fails on ruby 1.8)' do
-      Timeframe.new(:year => 2009).to_json.should == "2009-01-01/2010-01-01"
+      Timeframe.new(:year => 2009).to_json.should == %({"startDate":"2009-01-01","endDate":"2010-01-01"})
     end
   end
   
@@ -275,7 +262,7 @@ describe Timeframe do
   
   describe '#to_s' do
     it 'should not only look at month numbers when describing multi-year timeframes' do
-      Timeframe.multiyear(Date.parse('2008-01-01'), Date.parse('2010-01-01')).to_s.should == "2008-01-01/2010-01-01"
+      Timeframe.new(Date.parse('2008-01-01'), Date.parse('2010-01-01')).to_s.should == "2008-01-01/2010-01-01"
     end
   end
 end
