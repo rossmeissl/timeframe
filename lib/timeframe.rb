@@ -265,14 +265,11 @@ class Timeframe
   end
     
   # An ISO 8601 "time interval" like YYYY-MM-DD/YYYY-MM-DD
-  def to_param
+  def iso8601
     "#{start_date.iso8601}/#{end_date.iso8601}"
   end
-  
-  # The String representation is equivalent to its ISO 8601 form
-  def to_s
-    to_param
-  end
+  alias :to_s :iso8601
+  alias :to_param :iso8601
 
   # Deprecated
   def from # :nodoc:
