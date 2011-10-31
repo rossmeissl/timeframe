@@ -6,19 +6,16 @@ end
 require 'bundler'
 Bundler::GemHelper.install_tasks
 
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.spec_files = FileList['spec/**/*_spec.rb']
+require 'rake/testtask'
+
+Rake::TestTask.new do |t|
+  t.libs.push 'lib'
+  t.test_files = FileList['spec/**/*spec.rb']
+  t.verbose = true
 end
 
-Spec::Rake::SpecTask.new(:rcov) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rcov = true
-end
 
-task :default => :spec
+task :default => :test
 
 require 'rdoc/task'
 RDoc::Task.new do |rdoc|
