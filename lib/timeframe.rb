@@ -176,27 +176,15 @@ class Timeframe
   end
     
   # Returns an Array of month-long Timeframes. Partial months are **not** included by default.
-  def months(include_partial_months=false)
-    partial_months = (start_date.year..end_date.yesterday.year).map do |year|
-      (1..12).map do |month|
-        if include_partial_months
-          Timeframe.new(:year => year, :month => month) & self
-        else
-          Timeframe.new(:year => year, :month => month)
-        end
-      end
-    end.flatten
-  end
-    
-  # Returns an Array of year-long Timeframes. Partial years are **not** included by default.
-  def years(include_partial_years=false)
-    (start_date.year..end_date.yesterday.year).map do |year|
-      if include_partial_years
-        Timeframe.new(:year => year) & self
-      else
-        Timeframe.new(:year => year)
-      end
+  # http://stackoverflow.com/questions/1724639/iterate-every-month-with-date-objects
+  def months
+    memo = []
+    ptr = start_date
+    while ptr <= end_date do
+      memo.push(Timeframe.new(:year => ptr.year, :month => ptr.month) & self)
+      ptr = ptr >> 1
     end
+    memo.flatten.compact
   end
   
   # Crop a Timeframe to end no later than the provided date.
@@ -296,25 +284,5 @@ class Timeframe
   # Deprecated
   def to # :nodoc:
     @end_date
-  end
-
-  # Deprecated
-  def full_year_subtimeframes # :nodoc:
-    years
-  end
-  
-  # Deprecated
-  def year_subtimeframes # :nodoc:
-    years true
-  end
-  
-  # Deprecated
-  def full_month_subtimeframes # :nodoc:
-    months
-  end
-  
-  # Deprecated
-  def month_subtimeframes # :nodoc:
-    months true
   end
 end
