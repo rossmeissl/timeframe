@@ -53,15 +53,24 @@ class Timeframe
       new hsh[:startDate], hsh[:endDate]
     end
     
+    # Construct a new Timeframe from a year.
+    def from_year(year)
+      new :year => year.to_i
+    end
+    
     # Automagically parse a Timeframe from either a String or a Hash
     def parse(input)
       case input
+      when ::Integer
+        from_year input
       when ::Hash
         from_hash input
       when ::String
         str = input.strip
         if str.start_with?('{')
           from_hash ::MultiJson.decode(str)
+        elsif input =~ /\A\d\d\d\d\z/
+          from_year input
         else
           from_iso8601 str
         end

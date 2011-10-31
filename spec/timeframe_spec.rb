@@ -224,20 +224,25 @@ describe Timeframe do
     end
   end
   
-  describe 'Timeframe:class#interval' do
-    it 'should parse ISO 8601 interval format' do
-      Timeframe.interval('2009-01-01/2010-01-01').must_equal Timeframe.new(:year => 2009)
+  describe '.parse' do
+    it 'understands ISO8601' do
+      Timeframe.parse('2009-01-01/2010-01-01').must_equal Timeframe.new(:year => 2009)
     end
-    it 'should understand its own #to_param' do
-      t = Timeframe.new(:year => 2009)
-      Timeframe.interval(t.to_param).must_equal t
+    it 'understands plain year' do
+      plain_year = 2009
+      Timeframe.parse(plain_year).must_equal Timeframe.new(:year => plain_year)
+      Timeframe.parse(plain_year.to_s).must_equal Timeframe.new(:year => plain_year)
     end
-  end
-  
-  describe 'Timeframe:class#from_json' do
-    it 'should understand its own #to_json' do
-      t = Timeframe.new(:year => 2009)
-      Timeframe.from_json(t.to_json).must_equal t
+    it 'understands JSON' do
+      json =<<-EOS
+      {"startDate":"2009-05-01", "endDate":"2009-06-01"}
+EOS
+      Timeframe.parse(json).must_equal Timeframe.new(:year => 2009, :month => 5)
+    end
+    it 'understands a Ruby hash' do
+      hsh = { :startDate => '2009-05-01', :endDate => '2009-06-01' }
+      Timeframe.parse(hsh).must_equal Timeframe.new(:year => 2009, :month => 5)
+      Timeframe.parse(hsh.stringify_keys).must_equal Timeframe.new(:year => 2009, :month => 5)
     end
   end
   
@@ -245,11 +250,19 @@ describe Timeframe do
     it 'should generate JSON (test fails on ruby 1.8)' do
       Timeframe.new(:year => 2009).to_json.must_equal %({"startDate":"2009-01-01","endDate":"2010-01-01"})
     end
+    it 'understands its own #to_json' do
+      t = Timeframe.new(:year => 2009, :month => 5)
+      Timeframe.from_json(t.to_json).must_equal t
+    end
   end
   
   describe '#to_param' do
     it 'should generate a URL-friendly parameter' do
       Timeframe.new(:year => 2009).to_param.must_equal "2009-01-01/2010-01-01"
+    end
+    it 'understands its own #to_param' do
+      t = Timeframe.new(:year => 2009, :month => 5)
+      Timeframe.parse(t.to_param).must_equal t
     end
   end
   
