@@ -59,15 +59,15 @@ class Timeframe
       end
     end
     
+    # Deprecated
+    def multiyear(*args) # :nodoc:
+      new *args
+    end
+
     private
     
     def make_dates(start_date, end_date)
       [start_date.to_date, end_date.to_date]
-    end
-    
-    # Deprecated
-    def multiyear(*args) # :nodoc:
-      new *args
     end
   end
 
