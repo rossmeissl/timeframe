@@ -42,22 +42,35 @@ class Timeframe
     
     # Construct a new Timeframe by parsing an ISO 8601 time interval string
     # http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
-    def interval(str)
-      raise ArgumentError, 'Intervals should be specified as a string' unless str.is_a? String
+    def from_iso8601(str)
       raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless str =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
       new *str.split('/')
     end
     
-    def from_json(str)
-      str = str.strip
-      if str.start_with?('{')
-        hsh = ::MultiJson.decode str
-        new hsh['startDate'], hsh['endDate']
+    # Construct a new Timeframe from a hash with keys startDate and endDate    
+    def from_hash(hsh)
+      hsh = hsh.symbolize_keys
+      new hsh[:startDate], hsh[:endDate]
+    end
+    
+    # Automagically parse a Timeframe from either a String or a Hash
+    def parse(input)
+      case input
+      when ::Hash
+        from_hash input
+      when ::String
+        str = input.strip
+        if str.start_with?('{')
+          from_hash ::MultiJson.decode(str)
+        else
+          from_iso8601 str
+        end
       else
-        # Assume it's like "YYYY-MM-DD/YYYY-MM-DD", which is bad JSON, but we understand
-        interval str
+        raise ::ArgumentError, "Must be String or Hash"
       end
     end
+    alias :interval :parse
+    alias :from_json :parse
     
     # Deprecated
     def multiyear(*args) # :nodoc:
