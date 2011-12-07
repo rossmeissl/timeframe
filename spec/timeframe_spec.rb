@@ -159,7 +159,7 @@ describe Timeframe do
       Timeframe.new(:year => 2007).should == Timeframe.new(:year => 2007)
       Timeframe.new(:year => 2004, :month => 1).should == Timeframe.new(:year => 2004, :month => 1)
     end
-    
+
     it "should hash equal hash values when the timeframe is equal" do
       Timeframe.new(:year => 2007).hash.should == Timeframe.new(:year => 2007).hash
       Timeframe.new(:year => 2004, :month => 1).hash.should == Timeframe.new(:year => 2004, :month => 1).hash
@@ -171,7 +171,7 @@ describe Timeframe do
       Timeframe.new(:year => 2009).months.length.should == 12
     end
     it "should not return an array of month-long subtimeframes if provided an inappropriate range" do
-      lambda { 
+      lambda {
         Timeframe.new(Date.new(2009, 3, 2), Date.new(2009, 3, 5)).months
       }.should raise_error(ArgumentError, /whole/)
       lambda {
@@ -203,7 +203,7 @@ describe Timeframe do
   end
 
   describe '#/' do
-    it "should return a fraction of another timeframe" do 
+    it "should return a fraction of another timeframe" do
       (Timeframe.new(:month => 4, :year => 2009) / Timeframe.new(:year => 2009)).should == (30.0 / 365.0)
     end
   end
@@ -215,7 +215,7 @@ describe Timeframe do
         Timeframe.new(:year => 2009, :month => 5),
         Timeframe.new(Date.new(2009, 8, 1), Date.new(2009, 11, 1)),
         Timeframe.new(Date.new(2009, 9, 1), Date.new(2009, 10, 1))
-      ).should == 
+      ).should ==
         [ Timeframe.new(Date.new(2009, 1, 1), Date.new(2009, 3, 1)),
           Timeframe.new(Date.new(2009, 4, 1), Date.new(2009, 5, 1)),
           Timeframe.new(Date.new(2009, 6, 1), Date.new(2009, 8, 1)),
@@ -226,7 +226,7 @@ describe Timeframe do
   describe '#covered_by?' do
     it "should be able to ascertain gaps left by a list of other Timeframes" do
       Timeframe.new(:year => 2009).covered_by?(
-        Timeframe.new(:month => 1, :year => 2009), 
+        Timeframe.new(:month => 1, :year => 2009),
         Timeframe.new(Date.new(2009, 2, 1), Date.new(2010, 1, 1))
       ).should be_true
     end
@@ -238,7 +238,7 @@ describe Timeframe do
         Timeframe.new(Date.new(Date.today.year - 1, 1, 1), Date.new(Date.today.year, 1, 1))
     end
   end
-  
+
   describe 'Timeframe:class#interval' do
     it 'should parse ISO 8601 interval format' do
       Timeframe.interval('2009-01-01/2010-01-01').should == Timeframe.new(:year => 2009)
@@ -253,29 +253,51 @@ describe Timeframe do
       Timeframe.interval(t.to_param).should == t
     end
   end
-  
+
   describe 'Timeframe:class#from_json' do
     it 'should understand its own #to_json' do
       t = Timeframe.new(:year => 2009)
       Timeframe.from_json(t.to_json).should == t
     end
   end
-  
+
   describe '#to_json' do
     it 'should generate JSON (test fails on ruby 1.8)' do
       Timeframe.new(:year => 2009).to_json.should == "2009-01-01/2010-01-01"
     end
   end
-  
+
   describe '#to_param' do
     it 'should generate a URL-friendly parameter' do
       Timeframe.new(:year => 2009).to_param.should == "2009-01-01/2010-01-01"
     end
   end
-  
+
   describe '#to_s' do
     it 'should not only look at month numbers when describing multi-year timeframes' do
       Timeframe.multiyear(Date.parse('2008-01-01'), Date.parse('2010-01-01')).to_s.should == "2008-01-01/2010-01-01"
+    end
+  end
+
+  describe "Array#multiple_timeframes_gaps_left_by" do
+    it "should raise error if not a Timeframes are going to be merged" do
+      lambda {
+        [Timeframe.new(Date.parse('2011-10-10'), Date.parse('2011-10-28'))].multiple_timeframes_gaps_left_by(1,2)
+      }.should raise_error(ArgumentError, /only use timeframe/)
+    end
+
+    it "should properly work with multiple timeframes" do
+      t1 = Timeframe.new(Date.parse('2011-10-10'), Date.parse('2011-10-28'))
+      t2 = Timeframe.new(Date.parse('2011-11-01'), Date.parse('2011-11-12'))
+
+      t3 = Timeframe.new(Date.parse('2011-10-11'), Date.parse('2011-10-15'))
+      t4 = Timeframe.new(Date.parse('2011-11-01'), Date.parse('2011-11-08'))
+
+      [t1, t2].multiple_timeframes_gaps_left_by(t3, t4).should ==
+      [ Timeframe.new(Date.parse('2011-10-10'), Date.parse('2011-10-11')),
+        Timeframe.new(Date.parse('2011-10-15'), Date.parse('2011-10-28')),
+        Timeframe.new(Date.parse('2011-11-08'), Date.parse('2011-11-12'))
+      ]
     end
   end
 end
