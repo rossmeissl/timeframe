@@ -200,7 +200,7 @@ class Timeframe
   # Crop a Timeframe by another Timeframe
   def crop(container)
     raise ArgumentError, 'You can only crop a timeframe by another timeframe' unless container.is_a? Timeframe
-    self.class.new [from, container.from].max, [to, container.to].min
+    self.class.new [from, container.from].max, [to, container.to].min, :skip_year_boundary_crossing_check => true
   end
 
   # Returns an array of Timeframes representing the gaps left in the Timeframe after removing all given Timeframes
