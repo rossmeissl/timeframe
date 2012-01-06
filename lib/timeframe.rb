@@ -3,7 +3,8 @@ require 'multi_json'
 require 'active_support/version'
 require 'active_support/core_ext' if ActiveSupport::VERSION::MAJOR >= 3
 
-# Encapsulates a timeframe between two dates. The dates provided to the class are always **until** the last date. That means
+require 'timeframe/core_ext/array'
+# Encapsulates a timeframe between two dates. The dates provided to the class are always until the last date. That means
 # that the last date is excluded.
 #
 #   # from 2007-10-01 00:00:00.000 to 2007-10-31 23:59:59.999
@@ -131,7 +132,7 @@ class Timeframe
 
     @start_date, @end_date = start_date, end_date
   end
-  
+
   def inspect # :nodoc:
     "<Timeframe(#{object_id}) #{days} days starting #{start_date} ending #{end_date}>"
   end
@@ -144,7 +145,7 @@ class Timeframe
   def days
     (end_date - start_date).to_i
   end
-  
+
   # Returns true when a Date or other Timeframe is included in this Timeframe
   def include?(obj)
     # puts "checking to see if #{date} is between #{start_date} and #{end_date}" if Emitter::DEBUG
@@ -158,13 +159,13 @@ class Timeframe
       start_date <= obj.start_date and end_date >= obj.end_date
     end
   end
-  
+
   # Returns true when the parameter Timeframe is properly included in the Timeframe
   def proper_include?(other_timeframe)
     raise ArgumentError, 'Proper inclusion only makes sense when testing other Timeframes' unless other_timeframe.is_a? Timeframe
     (start_date < other_timeframe.start_date) and (end_date > other_timeframe.end_date)
   end
-  
+
   # Returns true when this timeframe is equal to the other timeframe
   def ==(other)
     # puts "checking to see if #{self} is equal to #{other}" if Emitter::DEBUG
@@ -172,18 +173,18 @@ class Timeframe
     start_date == other.start_date and end_date == other.end_date
   end
   alias :eql? :==
-    
+
   # Calculates a hash value for the Timeframe, used for equality checking and Hash lookups.
   def hash
     start_date.hash + end_date.hash
   end
-    
+
   # Returns the relevant year as a Timeframe
   def year
     raise ArgumentError, 'Timeframes that cross year boundaries are dangerous during Timeframe#year' unless start_date.year == end_date.yesterday.year
     Timeframe.new :year => start_date.year
   end
-    
+
   # Returns an Array of month-long Timeframes. Partial months are **not** included by default.
   # http://stackoverflow.com/questions/1724639/iterate-every-month-with-date-objects
   def months
@@ -195,7 +196,7 @@ class Timeframe
     end
     memo.flatten.compact
   end
-  
+
   # Crop a Timeframe to end no later than the provided date.
   def ending_no_later_than(date)
     if end_date < date
@@ -206,7 +207,7 @@ class Timeframe
       Timeframe.new start_date, date
     end
   end
-    
+
   # Returns a timeframe representing the intersection of the given timeframes
   def &(other_timeframe)
     this_timeframe = self
@@ -222,19 +223,19 @@ class Timeframe
       Timeframe.new [this_timeframe.start_date, other_timeframe.start_date].max, [this_timeframe.end_date, other_timeframe.end_date].min
     end
   end
-  
+
   # Returns the fraction (as a Float) of another Timeframe that this Timeframe represents
   def /(other_timeframe)
     raise ArgumentError, 'You can only divide a Timeframe by another Timeframe' unless other_timeframe.is_a? Timeframe
     self.days.to_f / other_timeframe.days.to_f
   end
-  
+
   # Crop a Timeframe by another Timeframe
   def crop(container)
     raise ArgumentError, 'You can only crop a timeframe by another timeframe' unless container.is_a? Timeframe
     self.class.new [start_date, container.start_date].max, [end_date, container.end_date].min
   end
-  
+
   # Returns an array of Timeframes representing the gaps left in the Timeframe after removing all given Timeframes
   def gaps_left_by(*timeframes)
     # remove extraneous timeframes
@@ -243,10 +244,10 @@ class Timeframe
     
     # crop timeframes
     timeframes.map! { |t| t.crop self }
-    
+
     # remove proper subtimeframes
     timeframes.reject! { |t| timeframes.detect { |u| u.proper_include? t } }
-    
+
     # escape
     return [self] if  timeframes.empty?
 
@@ -256,15 +257,15 @@ class Timeframe
     b = timeframes.collect(&:start_date) + [ end_date ]
 
     a.zip(b).map do |gap|
-      Timeframe.new(*gap) if gap[1] > gap[0]
+      Timeframe.new(*gap, :skip_year_boundary_crossing_check => true) if gap[1] > gap[0]
     end.compact
   end
-  
+
   # Returns true if the union of the given Timeframes includes the Timeframe
   def covered_by?(*timeframes)
     gaps_left_by(*timeframes).empty?
   end
-  
+
   # Returns the same Timeframe, only a year earlier
   def last_year
     self.class.new((start_date - 1.year), (end_date - 1.year))

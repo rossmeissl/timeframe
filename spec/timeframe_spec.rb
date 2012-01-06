@@ -153,7 +153,7 @@ describe Timeframe do
       Timeframe.new(:year => 2007).must_equal Timeframe.new(:year => 2007)
       Timeframe.new(:year => 2004, :month => 1).must_equal Timeframe.new(:year => 2004, :month => 1)
     end
-    
+
     it "should hash equal hash values when the timeframe is equal" do
       Timeframe.new(:year => 2007).hash.must_equal Timeframe.new(:year => 2007).hash
       Timeframe.new(:year => 2004, :month => 1).hash.must_equal Timeframe.new(:year => 2004, :month => 1).hash
@@ -212,7 +212,7 @@ describe Timeframe do
   describe '#covered_by?' do
     it "should be able to ascertain gaps left by a list of other Timeframes" do
       Timeframe.new(:year => 2009).covered_by?(
-        Timeframe.new(:month => 1, :year => 2009), 
+        Timeframe.new(:month => 1, :year => 2009),
         Timeframe.new(Date.new(2009, 2, 1), Date.new(2010, 1, 1))
       ).must_equal(true)
     end
@@ -245,7 +245,7 @@ EOS
       Timeframe.parse(hsh.stringify_keys).must_equal Timeframe.new(:year => 2009, :month => 5)
     end
   end
-  
+
   describe '#to_json' do
     it 'should generate JSON (test fails on ruby 1.8)' do
       Timeframe.new(:year => 2009).to_json.must_equal %({"startDate":"2009-01-01","endDate":"2010-01-01"})
@@ -255,7 +255,7 @@ EOS
       Timeframe.from_json(t.to_json).must_equal t
     end
   end
-  
+
   describe '#to_param' do
     it 'should generate a URL-friendly parameter' do
       Timeframe.new(:year => 2009).to_param.must_equal "2009-01-01/2010-01-01"
@@ -265,10 +265,32 @@ EOS
       Timeframe.parse(t.to_param).must_equal t
     end
   end
-  
+
   describe '#to_s' do
     it 'should not only look at month numbers when describing multi-year timeframes' do
       Timeframe.new(Date.parse('2008-01-01'), Date.parse('2010-01-01')).to_s.must_equal "2008-01-01/2010-01-01"
+    end
+  end
+
+  describe "Array#multiple_timeframes_gaps_left_by" do
+    it "should raise error if not a Timeframes are going to be merged" do
+      lambda {
+        [Timeframe.new(Date.parse('2011-10-10'), Date.parse('2011-10-28'))].multiple_timeframes_gaps_left_by(1,2)
+      }.should raise_error(ArgumentError, /only use timeframe/)
+    end
+
+    it "should properly work with multiple timeframes" do
+      t1 = Timeframe.new(Date.parse('2011-10-10'), Date.parse('2011-10-28'))
+      t2 = Timeframe.new(Date.parse('2011-11-01'), Date.parse('2011-11-12'))
+
+      t3 = Timeframe.new(Date.parse('2011-10-11'), Date.parse('2011-10-15'))
+      t4 = Timeframe.new(Date.parse('2011-11-01'), Date.parse('2011-11-08'))
+
+      [t1, t2].multiple_timeframes_gaps_left_by(t3, t4).should ==
+      [ Timeframe.new(Date.parse('2011-10-10'), Date.parse('2011-10-11')),
+        Timeframe.new(Date.parse('2011-10-15'), Date.parse('2011-10-28')),
+        Timeframe.new(Date.parse('2011-11-08'), Date.parse('2011-11-12'))
+      ]
     end
   end
 end
