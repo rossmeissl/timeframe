@@ -10,6 +10,8 @@ http://rdoc.info/projects/rossmeissl/timeframe
 
 The good parts of Timeframe all came from the gentlemen at Fingertips[http://fngtps.com].
 
+Thanks to @artemk for https://github.com/rossmeissl/timeframe/pull/5
+
 == Copyright
 
 Copyright (c) 2010 Andy Rossmeissl.
