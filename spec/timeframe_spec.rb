@@ -276,7 +276,7 @@ EOS
     it "should raise error if not a Timeframes are going to be merged" do
       lambda {
         [Timeframe.new(Date.parse('2011-10-10'), Date.parse('2011-10-28'))].multiple_timeframes_gaps_left_by(1,2)
-      }.should raise_error(ArgumentError, /only use timeframe/)
+      }.must_raise(ArgumentError, /only use timeframe/)
     end
 
     it "should properly work with multiple timeframes" do
@@ -286,11 +286,11 @@ EOS
       t3 = Timeframe.new(Date.parse('2011-10-11'), Date.parse('2011-10-15'))
       t4 = Timeframe.new(Date.parse('2011-11-01'), Date.parse('2011-11-08'))
 
-      [t1, t2].multiple_timeframes_gaps_left_by(t3, t4).should ==
+      [t1, t2].multiple_timeframes_gaps_left_by(t3, t4).must_equal(
       [ Timeframe.new(Date.parse('2011-10-10'), Date.parse('2011-10-11')),
         Timeframe.new(Date.parse('2011-10-15'), Date.parse('2011-10-28')),
         Timeframe.new(Date.parse('2011-11-08'), Date.parse('2011-11-12'))
-      ]
+      ])
     end
   end
 end
