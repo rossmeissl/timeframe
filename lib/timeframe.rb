@@ -3,7 +3,6 @@ require 'multi_json'
 require 'active_support/version'
 require 'active_support/core_ext' if ActiveSupport::VERSION::MAJOR >= 3
 
-require 'timeframe/core_ext/array'
 # Encapsulates a timeframe between two dates. The dates provided to the class are always until the last date. That means
 # that the last date is excluded.
 #
