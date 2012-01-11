@@ -256,7 +256,7 @@ class Timeframe
     b = timeframes.collect(&:start_date) + [ end_date ]
 
     a.zip(b).map do |gap|
-      Timeframe.new(*gap, :skip_year_boundary_crossing_check => true) if gap[1] > gap[0]
+      Timeframe.new(*gap) if gap[1] > gap[0]
     end.compact
   end
 
