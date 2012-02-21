@@ -289,7 +289,27 @@ class Timeframe
   end
   alias :to_s :iso8601
   alias :to_param :iso8601
-
+  
+  def dates
+    dates = []
+    cursor = start_date
+    while cursor < end_date
+      dates << cursor
+      cursor = cursor.succ
+    end
+    dates
+  end
+  
+  def first_days_of_months
+    dates = []
+    cursor = start_date.beginning_of_month
+    while cursor < end_date
+      dates << cursor
+      cursor = cursor >> 1
+    end
+    dates
+  end
+  
   # Deprecated
   def from # :nodoc:
     @start_date
