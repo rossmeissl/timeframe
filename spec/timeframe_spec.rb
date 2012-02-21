@@ -190,7 +190,7 @@ describe Timeframe do
 
   describe '#/' do
     it "should return a fraction of another timeframe" do 
-      (Timeframe.new(:month => 4, :year => 2009) / Timeframe.new(:year => 2009)).must_equal (30.0 / 365.0)
+      (Timeframe.new(:month => 4, :year => 2009) / Timeframe.new(:year => 2009)).must_equal(30.0 / 365.0)
     end
   end
 
@@ -233,6 +233,11 @@ describe Timeframe do
       it 'works with time' do
         Timeframe.parse('2007-03-01T13:00:00Z/2008-05-11T15:30:00Z').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
         Timeframe.parse('2007-03-01T13:00:00Z--2008-05-11T15:30:00Z').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+      end
+      it 'takes shorthand' do
+        Timeframe.parse('2007-11-13/15').must_equal Timeframe.new(Date.new(2007, 11, 13), Date.new(2007, 11, 15)) # "2007-11-13/15", i.e. from any time on 2007-11-13 to any time on 2007-11-15
+        Timeframe.parse("2008-02-15/03-14").must_equal Timeframe.new(Date.new(2008, 2, 15), Date.new(2008, 3, 14)) # "2008-02-15/2008-03-14"
+        Timeframe.parse("2007-12-14T13:30/15:30").must_equal Timeframe.new(Date.new(2007, 12, 14), Date.new(2007, 12, 14)) # "2007-12-14T13:30/2007-12-14T15:30".. imprecise!
       end
     end
 
