@@ -24,7 +24,7 @@ class Timeframe
     end
 
     # Internal use.
-    class Part
+    class Side
       EXCLUDED_LAST_DAY = 86_400
       attr_reader :date_part, :time_part
       def resolve(counterpart)
@@ -41,14 +41,16 @@ class Timeframe
     end
     
     # Internal use.
-    class A < Part
+    #
+    # The "A" side of "A/B"
+    class A < Side
       def initialize(raw)
         raw = raw.upcase
         @date_part, @time_part = raw.split('T')
         @time_part ||= ''
       end
       def as_time(*)
-        ::Time.parse [date_part, time_part].join('T')
+        Time.parse [date_part, time_part].join('T')
       end
       # When A is a period, it counts as a negative offset to B.
       def as_offset
@@ -57,7 +59,9 @@ class Timeframe
     end
     
     # Internal use.
-    class B < Part
+    #
+    # The "B" side of "A/B"
+    class B < Side
       def initialize(raw)
         raw = raw.upcase
         if raw.include?(':') and not raw.include?('T')
@@ -82,7 +86,7 @@ class Timeframe
         else
           time_part
         end
-        ::Time.parse [filled_in_date_part, filled_in_time_part].join('T')
+        Time.parse [filled_in_date_part, filled_in_time_part].join('T')
       end
       def as_offset
         to_duration.seconds
