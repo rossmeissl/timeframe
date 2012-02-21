@@ -271,6 +271,23 @@ EOS
       Timeframe.new(Date.parse('2008-01-01'), Date.parse('2010-01-01')).to_s.must_equal "2008-01-01/2010-01-01"
     end
   end
+  
+  describe '#dates' do
+    it "should enumerate all dates between start and end" do
+      dates = Timeframe.new(:year => 2008).dates
+      dates.min.must_equal Date.new(2008,1,1)
+      dates.max.must_equal Date.new(2008,12,31)
+      dates.uniq.length.must_equal 366
+      dates.select { |d| d.month == 2 }.length.must_equal 29
+    end
+  end
+  
+  describe '#first_days_of_months' do
+    it "should enumerate all the first days of included months" do
+      dates = Timeframe.parse('2011-05-01/2012-02-01').first_days_of_months
+      dates.must_equal [Date.new(2011,5,1), Date.new(2011,6,1), Date.new(2011,7,1), Date.new(2011,8,1), Date.new(2011,9,1), Date.new(2011,10,1), Date.new(2011,11,1), Date.new(2011,12,1), Date.new(2012,1,1)]
+    end
+  end
 
   describe "Array#multiple_timeframes_gaps_left_by" do
     it "should raise error if not a Timeframes are going to be merged" do
