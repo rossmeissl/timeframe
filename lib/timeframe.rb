@@ -47,6 +47,9 @@ class Timeframe
     def from_iso8601(str)
       delimiter = str.include?('/') ? '/' : '--'
       a_raw, b_raw = str.split delimiter
+      if a_raw.blank? or b_raw.blank?
+        raise ArgumentError, "Interval must be specified according to ISO 8601 <start>/<end>, <start>/<duration>, or <duration>/<end>."
+      end
       a = Iso8601::A.new a_raw
       b = Iso8601::B.new b_raw
       new a.to_time(b), b.to_time(a)
