@@ -49,7 +49,7 @@ class Timeframe
       a_raw, b_raw = str.split delimiter
       a = Iso8601::A.new a_raw
       b = Iso8601::B.new b_raw
-      new a.resolve(b), b.resolve(a)
+      new a.to_time(b), b.to_time(a)
     end
     
     # Construct a new Timeframe from a hash with keys startDate and endDate    

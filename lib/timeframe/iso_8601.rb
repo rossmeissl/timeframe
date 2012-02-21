@@ -25,18 +25,15 @@ class Timeframe
 
     # Internal use.
     class Side
+      # We add one day because so that it can be excluded per timeframe's conventions.
       EXCLUDED_LAST_DAY = 86_400
       attr_reader :date_part, :time_part
-      def resolve(counterpart)
+      def to_time(counterpart)
         if date_part.start_with?('P')
-          # We add one day because so that it can be excluded per timeframe's conventions.
-          counterpart.as_time(self) + as_offset + EXCLUDED_LAST_DAY
+          counterpart.resolve_time(self) + resolve_offset + EXCLUDED_LAST_DAY
         else
-          as_time counterpart
+          resolve_time counterpart
         end
-      end
-      def to_duration
-        Duration.new date_part, time_part
       end
     end
     
@@ -49,12 +46,12 @@ class Timeframe
         @date_part, @time_part = raw.split('T')
         @time_part ||= ''
       end
-      def as_time(*)
+      def resolve_time(*)
         Time.parse [date_part, time_part].join('T')
       end
       # When A is a period, it counts as a negative offset to B.
-      def as_offset
-        0.0 - to_duration.seconds
+      def resolve_offset
+        0.0 - Duration.new(date_part, time_part).seconds
       end
     end
     
@@ -75,7 +72,7 @@ class Timeframe
       end
       # When shorthand is used, we need to peek at our counterpart (A) in order to steal letters
       # Shorthand can only be used on the B side, and only in <start>/<end> format.
-      def as_time(counterpart)
+      def resolve_time(counterpart)
         filled_in_date_part = unless date_part.count('-') == 2
           counterpart.date_part[0..(0-date_part.length-1)] + date_part
         else
@@ -88,8 +85,8 @@ class Timeframe
         end
         Time.parse [filled_in_date_part, filled_in_time_part].join('T')
       end
-      def as_offset
-        to_duration.seconds
+      def resolve_offset
+        Duration.new(date_part, time_part).seconds
       end
     end
   end
