@@ -1,17 +1,17 @@
-= timeframe
+# timeframe
 
 A Ruby class for describing and interacting with timeframes.
 
-== Documentation
+## Documentation
 
 http://rdoc.info/projects/rossmeissl/timeframe
 
-== Acknowledgements
+## Acknowledgements
 
 The good parts of Timeframe all came from the gentlemen at Fingertips[http://fngtps.com].
 
 Thanks to @artemk for https://github.com/rossmeissl/timeframe/pull/5
 
-== Copyright
+## Copyright
 
-Copyright (c) 2010 Andy Rossmeissl.
+Copyright (c) 2012 Andy Rossmeissl, Seamus Abshere

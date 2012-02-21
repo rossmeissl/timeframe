@@ -1,4 +1,9 @@
-source "http://rubygems.org"
+source :rubygems
 
-# Specify your gem's dependencies in timeframe.gemspec
 gemspec
+
+# development dependencies
+gem 'yard'
+gem 'minitest'
+gem 'home_run'
+gem 'rake'
