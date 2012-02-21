@@ -73,14 +73,14 @@ class Timeframe
       when ::String
         str = input.strip
         if str.start_with?('{')
-          from_hash ::MultiJson.decode(str)
+          from_hash MultiJson.decode(str)
         elsif input =~ /\A\d\d\d\d\z/
           from_year input
         else
           from_iso8601 str
         end
       else
-        raise ::ArgumentError, "Must be String or Hash"
+        raise ArgumentError, "Must be String or Hash"
       end
     end
     alias :interval :parse
