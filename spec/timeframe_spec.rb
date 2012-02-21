@@ -59,7 +59,7 @@ describe Timeframe do
     end
   end
 
-  describe '.constrained_new' do
+  describe :constrained_new do
     let(:start) { Date.parse('2008-02-14') }
     let(:finish) { Date.parse('2008-05-10') }
     let(:constraint_start) { Date.parse('2008-01-01') }
@@ -108,7 +108,7 @@ describe Timeframe do
     end
   end
 
-  describe '.this_year' do
+  describe :this_year do
     it "should return the current year" do
       Timeframe.this_year.must_equal Timeframe.new(:year => Time.now.year)
     end
@@ -224,10 +224,45 @@ describe Timeframe do
     end
   end
   
-  describe '.parse' do
-    it 'understands ISO8601' do
-      Timeframe.parse('2009-01-01/2010-01-01').must_equal Timeframe.new(:year => 2009)
+  describe :parse do
+    describe 'ISO 8601 <start>/<end>' do
+      it 'works without time' do
+        Timeframe.parse('2007-03-01/2008-05-11').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+        Timeframe.parse('2007-03-01--2008-05-11').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+      end
+      it 'works with time' do
+        Timeframe.parse('2007-03-01T13:00:00Z/2008-05-11T15:30:00Z').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+        Timeframe.parse('2007-03-01T13:00:00Z--2008-05-11T15:30:00Z').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+      end
     end
+
+    describe 'ISO 8601 <start>/<duration>' do
+      it 'works without time' do
+        Timeframe.parse('2007-03-01/P1Y2M10DT2H30M').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+        Timeframe.parse('2007-03-01--P1Y2M10DT2H30M').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+      end
+      it 'works with time' do
+        Timeframe.parse('2007-03-01T13:00:00Z/P1Y2M10DT2H30M').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+        Timeframe.parse('2007-03-01T13:00:00Z--P1Y2M10DT2H30M').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 5, 11))
+      end
+    end
+    
+    # note that 2008 was a leap year
+    describe 'ISO 8601 <duration>/<end>' do
+      it 'works with leap years' do
+        Timeframe.parse('2007-02-28--P1Y').must_equal Timeframe.new(Date.new(2007, 2, 28), Date.new(2008, 2, 29))
+        Timeframe.parse('P1Y--2008-02-29').must_equal Timeframe.new(Date.new(2007, 3, 1), Date.new(2008, 2, 29))
+      end
+      it 'works without time' do
+        Timeframe.parse('P1Y2M10DT2H30M/2008-05-11').must_equal Timeframe.new(Date.new(2007, 3, 2), Date.new(2008, 5, 11))
+        Timeframe.parse('P1Y2M10DT2H30M--2008-05-11').must_equal Timeframe.new(Date.new(2007, 3, 2), Date.new(2008, 5, 11))
+      end
+      it 'works with time' do
+        Timeframe.parse('P1Y2M10DT2H30M/2008-05-11T15:30:00Z').must_equal Timeframe.new(Date.new(2007, 3, 3), Date.new(2008, 5, 11))
+        Timeframe.parse('P1Y2M10DT2H30M--2008-05-11T15:30:00Z').must_equal Timeframe.new(Date.new(2007, 3, 3), Date.new(2008, 5, 11))
+      end
+    end
+
     it 'understands plain year' do
       plain_year = 2009
       Timeframe.parse(plain_year).must_equal Timeframe.new(:year => plain_year)

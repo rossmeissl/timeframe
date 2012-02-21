@@ -3,6 +3,8 @@ require 'multi_json'
 require 'active_support/version'
 require 'active_support/core_ext' if ActiveSupport::VERSION::MAJOR >= 3
 
+require 'timeframe/iso_8601'
+
 # Encapsulates a timeframe between two dates. The dates provided to the class are always until the last date. That means
 # that the last date is excluded.
 #
@@ -43,8 +45,11 @@ class Timeframe
     # Construct a new Timeframe by parsing an ISO 8601 time interval string
     # http://en.wikipedia.org/wiki/ISO_8601#Time_intervals
     def from_iso8601(str)
-      raise ArgumentError, 'Intervals should be specified according to ISO 8601, method 1, eliding times' unless str =~ /^\d\d\d\d-\d\d-\d\d\/\d\d\d\d-\d\d-\d\d$/
-      new *str.split('/')
+      delimiter = str.include?('/') ? '/' : '--'
+      a_raw, b_raw = str.split delimiter
+      a = Iso8601::A.new a_raw
+      b = Iso8601::B.new b_raw
+      new a.resolve(b), b.resolve(a)
     end
     
     # Construct a new Timeframe from a hash with keys startDate and endDate    
