@@ -278,10 +278,6 @@ class Timeframe
     self.class.new((start_date - 1.year), (end_date - 1.year))
   end
   
-  def to_json(*)
-    iso8601
-  end
-  
   def as_json(*)
     iso8601
   end

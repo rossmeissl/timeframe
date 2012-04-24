@@ -275,7 +275,7 @@ describe Timeframe do
     end
     it 'understands JSON' do
       json =<<-EOS
-      2009-05-01/2009-06-01
+      "2009-05-01/2009-06-01"
 EOS
       Timeframe.parse(json).must_equal Timeframe.new(:year => 2009, :month => 5)
     end
@@ -286,13 +286,14 @@ EOS
     end
   end
 
-  describe '#to_json' do
+  describe '#as_json' do
     it 'should generate JSON (test fails on ruby 1.8)' do
-      Timeframe.new(:year => 2009).to_json.must_equal %{2009-01-01/2010-01-01}
+      Timeframe.new(:year => 2009).as_json.must_equal %{2009-01-01/2010-01-01}
+      MultiJson.dump(Timeframe.new(:year => 2009)).must_equal Timeframe.new(:year => 2009).as_json.inspect
     end
-    it 'understands its own #to_json' do
+    it 'understands its own JSON' do
       t = Timeframe.new(:year => 2009, :month => 5)
-      Timeframe.from_json(t.to_json).must_equal t
+      Timeframe.from_json(MultiJson.dump(t)).must_equal t
     end
   end
 
