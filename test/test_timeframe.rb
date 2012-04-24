@@ -1,4 +1,4 @@
-require File.expand_path('../spec_helper', __FILE__)
+require 'helper'
 
 describe Timeframe do
   describe 'initialization' do
@@ -275,11 +275,11 @@ describe Timeframe do
     end
     it 'understands JSON' do
       json =<<-EOS
-      {"startDate":"2009-05-01", "endDate":"2009-06-01"}
+      2009-05-01/2009-06-01
 EOS
       Timeframe.parse(json).must_equal Timeframe.new(:year => 2009, :month => 5)
     end
-    it 'understands a Ruby hash' do
+    it 'understands a particular style of Ruby hash we used to emit (deprecated)' do
       hsh = { :startDate => '2009-05-01', :endDate => '2009-06-01' }
       Timeframe.parse(hsh).must_equal Timeframe.new(:year => 2009, :month => 5)
       Timeframe.parse(hsh.stringify_keys).must_equal Timeframe.new(:year => 2009, :month => 5)
@@ -288,7 +288,7 @@ EOS
 
   describe '#to_json' do
     it 'should generate JSON (test fails on ruby 1.8)' do
-      Timeframe.new(:year => 2009).to_json.must_equal %({"startDate":"2009-01-01","endDate":"2010-01-01"})
+      Timeframe.new(:year => 2009).to_json.must_equal %{2009-01-01/2010-01-01}
     end
     it 'understands its own #to_json' do
       t = Timeframe.new(:year => 2009, :month => 5)

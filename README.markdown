@@ -2,6 +2,17 @@
 
 A Ruby class for describing and interacting with timeframes.
 
+## Real-world usage
+
+<p><a href="http://brighterplanet.com"><img src="https://s3.amazonaws.com/static.brighterplanet.com/assets/logos/flush-left/inline/green/rasterized/brighter_planet-160-transparent.png" alt="Brighter Planet logo"/></a></p>
+
+We use `timeframe` for [data science at Brighter Planet](http://brighterplanet.com/research) and in production at
+
+* [Brighter Planet's impact estimate web service](http://impact.brighterplanet.com)
+* [Brighter Planet's reference data web service](http://data.brighterplanet.com)
+
+Originally proposed to us by [the awesome programmers at fingertips](http:/fngtps.com)
+
 ## Based on ISO 8601
 
 As [documented by wikipedia](http://en.wikipedia.org/wiki/ISO_8601#Time_intervals), time intervals are like:
@@ -32,8 +43,6 @@ This may change in the future.
 http://rdoc.info/projects/rossmeissl/timeframe
 
 ## Acknowledgements
-
-The good parts of Timeframe all came from the gentlemen at Fingertips[http://fngtps.com].
 
 Thanks to @artemk for https://github.com/rossmeissl/timeframe/pull/5
 

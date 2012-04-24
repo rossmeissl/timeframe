@@ -1,0 +1,11 @@
+0.2.0 / 2012-04-24
+
+* Breaking changes
+
+  * Use ISO8601 for JSON output. No sense in coming up with our own structure. Timeframe.parse will still understand the old startDate/endDate hash structure.
+
+* Enhancements
+
+  * New MultiJson syntax
+  * Simplify and DRY.
+  * Tested on MRI 1.8, MRI 1.9, and JRuby 1.6.7+
