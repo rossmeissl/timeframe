@@ -76,7 +76,7 @@ class Timeframe
       when ::String
         str = input.strip
         if str.start_with?('{')
-          from_hash MultiJson.decode(str)
+          from_hash MultiJson.load(str)
         elsif input =~ /\A\d\d\d\d\z/
           from_year input
         else
