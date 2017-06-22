@@ -21,5 +21,8 @@ Gem::Specification.new do |s|
   
   s.add_runtime_dependency 'activesupport', '>=2.3.5'
   s.add_runtime_dependency 'i18n'
-  s.add_runtime_dependency 'multi_json'
+
+  s.add_development_dependency "bundler"
+  s.add_development_dependency "rake"
+  s.add_development_dependency "rspec"
 end

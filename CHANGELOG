@@ -1,3 +1,14 @@
+1.0.0 / 2017-06-22
+
+* Breaking changes
+
+  * No more Array#multiple_timeframes_gaps_left_by (who knows what that was for)
+
+* Enhancements
+
+  * Only uses active_support/core_ext/date
+  * Convert to rspec, modernize
+
 0.2.1 / 2012-04-24
 
 * Bug fixes

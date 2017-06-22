@@ -1,7 +1,7 @@
 require 'date'
 require 'multi_json'
-require 'active_support/version'
-require 'active_support/core_ext' if ActiveSupport::VERSION::MAJOR >= 3
+require 'active_support'
+require 'active_support/core_ext/date'
 
 require 'timeframe/iso_8601'
 
@@ -94,10 +94,23 @@ class Timeframe
       new *args
     end
 
+    def to_date(v)
+      case v
+      when NilClass
+        nil
+      when Date
+        v
+      when Time
+        v.to_date
+      else
+        Date.parse v
+      end
+    end
+
     private
     
     def make_dates(start_date, end_date)
-      [start_date.to_date, end_date.to_date]
+      [to_date(start_date), to_date(end_date)]
     end
   end
 
@@ -131,8 +144,8 @@ class Timeframe
       end_date   = Date.new(year+1, 1, 1)
     end
 
-    start_date = args.shift.to_date if start_date.nil? and args.any?
-    end_date = args.shift.to_date if end_date.nil? and args.any?
+    start_date ||= Timeframe.to_date(args[0])
+    end_date ||= Timeframe.to_date(args[1])
 
     raise ArgumentError, "Please supply a start and end date, `#{args.map(&:inspect).to_sentence}' is not enough" if start_date.nil? or end_date.nil?
     raise ArgumentError, "Start date #{start_date} should be earlier than end date #{end_date}" if start_date > end_date
@@ -160,7 +173,7 @@ class Timeframe
     when Date
       (start_date...end_date).include?(obj)
     when Time
-      # (start_date...end_date).include?(obj.to_date)
+      # (start_date...end_date).include?(Date.parse(obj))
       raise "this wasn't previously supported, but it could be"
     when Timeframe
       start_date <= obj.start_date and end_date >= obj.end_date
@@ -275,7 +288,10 @@ class Timeframe
 
   # Returns the same Timeframe, only a year earlier
   def last_year
-    self.class.new((start_date - 1.year), (end_date - 1.year))
+    self.class.new(
+      Date.new(start_date.year - 1, start_date.month, start_date.day),
+      Date.new(end_date.year - 1, end_date.month, end_date.day)
+    )
   end
   
   def as_json(*)
